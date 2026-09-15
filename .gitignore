@@ -1,0 +1,19 @@
+# Dependencies and package-manager caches
+node_modules/
+.npm-cache/
+
+# Generated installers, unpacked Electron builds and temporary packaging work
+dist/
+release*/
+outputs/
+bundle-tracking/
+work/
+*.asar
+*.blockmap
+*.log
+
+# Local OS/editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/

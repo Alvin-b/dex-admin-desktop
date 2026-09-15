@@ -1,0 +1,47 @@
+{
+  "name": "dex-admin-desktop",
+  "version": "1.0.0",
+  "description": "DEX Logistics administrative desktop console",
+  "author": "DEX Logistics",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "co.dexlogistics.admin",
+    "productName": "DEX Admin Console",
+    "icon": "assets/dex-logo.ico",
+    "electronDist": "node_modules/electron/dist",
+    "directories": {
+      "output": "release-current"
+    },
+    "artifactName": "DEX Admin Desktop Setup.${ext}",
+    "compression": "store",
+    "npmRebuild": false,
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "styles.css",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^37.2.6",
+    "electron-builder": "^26.0.12"
+  },
+  "allowScripts": {}
+}
