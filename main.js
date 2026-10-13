@@ -2,11 +2,6 @@ const { app, BrowserWindow, ipcMain, safeStorage, shell, dialog } = require('ele
 const fs = require('fs');
 const path = require('path');
 
-// Some Windows graphics drivers terminate Chromium's GPU process before the
-// first window appears. The admin console is a data-entry application, so it
-// is safer to use software rendering than to fail silently at startup.
-app.disableHardwareAcceleration();
-
 let mainWindow;
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
 if (!hasSingleInstanceLock) {
@@ -32,29 +27,10 @@ function writeSession(session) {
   fs.writeFileSync(tokenPath(), safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(value.toString()) : value);
 }
 function clearSession() { try { fs.unlinkSync(tokenPath()); } catch {} }
-function startupLog(message, error) {
-  try {
-    const logPath = path.join(app.getPath('userData'), 'startup.log');
-    fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${message}${error ? `: ${error.stack || error.message || error}` : ''}\n`, 'utf8');
-  } catch {}
-}
-process.on('uncaughtException', error => {
-  startupLog('Uncaught main-process exception', error);
-  if (app.isReady()) dialog.showErrorBox('DEX Admin Console could not start', `${error.message}\n\nA diagnostic was saved to the DEX Admin Console startup.log file.`);
-});
-process.on('unhandledRejection', error => startupLog('Unhandled main-process rejection', error));
 function createWindow() {
   mainWindow = new BrowserWindow({ width: 1440, height: 900, minWidth: 1100, minHeight: 700, backgroundColor: '#07131f', autoHideMenuBar: true, icon: path.join(__dirname, 'assets', 'dex-logo.ico'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false } });
-  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-    startupLog(`Renderer failed to load ${validatedURL}`, new Error(`${errorDescription} (${errorCode})`));
-    dialog.showErrorBox('DEX Admin Console could not start', `${errorDescription} (${errorCode})\n\n${validatedURL}`);
-  });
-  mainWindow.webContents.on('render-process-gone', (_event, details) => {
-    startupLog(`Renderer process exited (${details.reason})`, new Error(details.exitCode == null ? 'unknown exit code' : `exit code ${details.exitCode}`));
-    if (!mainWindow.isDestroyed()) dialog.showErrorBox('DEX Admin Console stopped', `The application renderer exited unexpectedly (${details.reason}).\n\nA diagnostic was saved to the DEX Admin Console startup.log file.`);
-  });
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.loadFile('index.html');
 }
 app.whenReady().then(() => { createWindow(); app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow(); }); });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
