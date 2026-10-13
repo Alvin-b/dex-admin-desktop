@@ -2,6 +2,8 @@ Unicode true
 ManifestDPIAware true
 RequestExecutionLevel user
 
+!include MUI2.nsh
+
 !define APP_NAME "DEX Admin Console"
 !define APP_VERSION "1.0.1"
 !define APP_EXE "DEX Admin Console.exe"
@@ -21,10 +23,21 @@ VIAddVersionKey /LANG=1033 "FileDescription" "DEX Logistics administrative deskt
 VIAddVersionKey /LANG=1033 "FileVersion" "${APP_VERSION}"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "DEX Logistics"
 
-Page directory
-Page instfiles
-UninstPage uninstConfirm
-UninstPage instfiles
+!define MUI_ABORTWARNING
+!define MUI_FINISHPAGE_RUN_FUNCTION LaunchApplication
+!define MUI_FINISHPAGE_RUN_TEXT "Launch DEX Admin Console"
+!define MUI_FINISHPAGE_RUN_CHECKED
+
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_LANGUAGE "English"
+
+Function LaunchApplication
+  ExecShell "open" "$INSTDIR\${APP_EXE}"
+FunctionEnd
 
 Section "Install"
   SetOutPath "${INSTALL_DIR}"
