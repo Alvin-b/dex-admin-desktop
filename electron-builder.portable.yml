@@ -10,4 +10,4 @@ win:
     - target: portable
       arch:
         - x64
-  signAndEditExecutable: false
+  signExecutable: false

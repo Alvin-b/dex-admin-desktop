@@ -10,7 +10,7 @@ win:
     - target: nsis
       arch:
         - x64
-  signAndEditExecutable: false
+  signExecutable: false
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
