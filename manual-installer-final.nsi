@@ -24,6 +24,7 @@ VIAddVersionKey /LANG=1033 "FileVersion" "${APP_VERSION}"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "DEX Logistics"
 
 !define MUI_ABORTWARNING
+!define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION LaunchApplication
 !define MUI_FINISHPAGE_RUN_TEXT "Launch DEX Admin Console"
 !define MUI_FINISHPAGE_RUN_CHECKED
