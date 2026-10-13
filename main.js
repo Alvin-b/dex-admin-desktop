@@ -30,7 +30,10 @@ function clearSession() { try { fs.unlinkSync(tokenPath()); } catch {} }
 function createWindow() {
   mainWindow = new BrowserWindow({ width: 1440, height: 900, minWidth: 1100, minHeight: 700, backgroundColor: '#07131f', autoHideMenuBar: true, icon: path.join(__dirname, 'assets', 'dex-logo.ico'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false } });
-  mainWindow.loadFile('index.html');
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    dialog.showErrorBox('DEX Admin Console could not start', `${errorDescription} (${errorCode})\n\n${validatedURL}`);
+  });
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
 }
 app.whenReady().then(() => { createWindow(); app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow(); }); });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
