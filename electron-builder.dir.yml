@@ -1,0 +1,13 @@
+appId: co.dexlogistics.admin
+productName: DEX Admin Console
+files:
+  - '**/*'
+  - '!README.md'
+  - '!work/**'
+icon: assets/dex-logo.ico
+win:
+  target:
+    - target: dir
+      arch:
+        - x64
+  signAndEditExecutable: false
