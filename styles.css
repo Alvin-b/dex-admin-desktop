@@ -104,3 +104,14 @@
 .app-shell.page-shipments.scroll-direction-down .topbar,.app-shell.page-shipments.scroll-direction-down .package-toolbar{transform:none!important;opacity:1!important;pointer-events:auto!important}
 .payment-paste-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 12px;padding:12px;border:1px solid #25445a;border-radius:10px;background:#0a1b27}
 .payment-paste-tools .muted{flex:1;min-width:240px;font-size:12px;line-height:1.5}
+
+/* Payment evidence thumbnails: the image is visible in the queue, while the
+   same control opens the full-size signed image when clicked. */
+.evidence-preview{display:flex;align-items:center;gap:8px;width:180px;min-height:72px;padding:5px;border:1px solid #2b5871;border-radius:9px;background:#081a27;color:#cce7f4;cursor:pointer;text-align:left;overflow:hidden}
+.evidence-preview:hover{border-color:#4dd1c5;background:#102d3d;transform:translateY(-1px)}
+.evidence-preview img{display:block;width:76px;height:60px;flex:0 0 76px;object-fit:cover;border-radius:6px;background:#102d3d}
+.evidence-preview span{font-size:11px;font-weight:700;line-height:1.25}
+.evidence-preview.unavailable{border-color:#74424b;color:#ffb2b7}
+.evidence-preview.unavailable img{display:none}
+.payment-amount{white-space:nowrap;color:#8ff0c9}
+.payment-amount-hint{display:block;margin-top:6px;color:#8ff0c9;font-size:11px}
