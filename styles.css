@@ -115,3 +115,5 @@
 .evidence-preview.unavailable img{display:none}
 .payment-amount{white-space:nowrap;color:#8ff0c9}
 .payment-amount-hint{display:block;margin-top:6px;color:#8ff0c9;font-size:11px}
+
+.payment-package-unavailable{opacity:.55;cursor:not-allowed}.payment-package-unavailable:hover{background:transparent}.payment-link-amount{display:flex;flex-direction:column;gap:4px;margin:14px 0;padding:11px 13px;border:1px solid #5b4e2c;border-radius:10px;background:#211d13;color:#f4d58a}.payment-link-amount span{color:#bda96f;font-size:12px}
