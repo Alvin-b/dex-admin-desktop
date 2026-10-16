@@ -10,7 +10,7 @@ RequestExecutionLevel user
 ${Using:StrFunc} StrStr
 
 !define APP_NAME "DEX Admin Console"
-!define APP_VERSION "1.1.5"
+!define APP_VERSION "1.1.6"
 !define APP_EXE "DEX Admin Console.exe"
 !define INSTALL_DIR "$LOCALAPPDATA\DEX Admin Console"
 

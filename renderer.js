@@ -614,6 +614,9 @@ function readableError(value){
   if(/check constraint.*status/.test(lower)){
     return 'The package status is not accepted by the deployed database. Refresh the app after the latest backend migration is applied.';
   }
+  if(/^internal server error\.?$/.test(lower)){
+    return 'The live employee service is running an older backend build. Deploy commit e6763bb from my-mobile-companion, then restart DEX Admin Console and retry.';
+  }
   return raw.length>220?`${raw.slice(0,217)}…`:raw;
 }
 
