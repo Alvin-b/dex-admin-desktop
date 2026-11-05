@@ -1,6 +1,6 @@
 # DEX Admin Console
 
-Windows desktop administration app for the same Supabase backend used by the Android client.
+Windows desktop administration app for the same Supabase backend used by the mobile client. The current installer is a DEX-branded Electron shell around the live hosted console, so UI and backend-compatible route updates can be delivered at `https://swift-creation-app.lovable.app/dashboard` without downloading a new installer for every change.
 
 ## Run and build
 
@@ -17,7 +17,7 @@ The Windows x64 application directory is generated at `dist/win-unpacked/`. The 
  dist/win-unpacked/DEX Admin Console.exe
 ```
 
-The project includes the DEX application icon at `assets/dex-logo.ico` and uses it for the Windows executable build. The complete application directory can be zipped for distribution; do not commit `dist/` or `node_modules/` to GitHub.
+The project includes the DEX application icon at `assets/dex-logo.ico` and uses it for the Windows executable, installer, and shortcuts. The reproducible hosted-shell installer is `manual-installer-final-audit.nsi`; it builds the standalone `DEX-Admin-Console-Setup-1.2.1-full-functional-audit-x64.exe`. The installer detects a running app and offers to close it before replacing locked files. Do not commit `dist/` or `node_modules/` to GitHub.
 
 The app is intentionally built unsigned. Windows may show a SmartScreen prompt on first launch; choose **More info → Run anyway** only after confirming that the file was produced from this project.
 
@@ -31,7 +31,7 @@ npm run dist:win:dir
 
 ## First launch
 
-Enter the Supabase project URL and the **publishable/anon key** already used by the mobile client. Do not use a service-role key in a desktop application. Sign in with an active administrator account. The app then uses the authenticated JWT for protected API and REST calls.
+The hosted shell opens the Lovable dashboard URL above. Sign in with an active account; the hosted app uses the authenticated Supabase JWT for protected API and REST calls. The Electron wrapper keeps a branded offline fallback and opens non-console links in the system browser.
 
 ## Employee editing
 
@@ -43,7 +43,7 @@ PATCH /api/public/admin/employees
 
 The profile-edit payload contains `employee_id`, `full_name`, `email`, `phone`, and `role`. The activation toggle uses a separate payload containing `employee_id` and `is_active`, matching the backend route contract.
 
-## Included operations
+## Included hosted operations
 
 - Live operational overview, revenue and payment queue
 - Shipment search and status transitions
@@ -52,3 +52,6 @@ The profile-edit payload contains `employee_id`, `full_name`, `email`, `phone`, 
 - Payment notification review
 - Broadcast announcement creation
 - Audit log inspection and CSV export
+- Administrator-only payment evidence correction, package unlinking, and audited deletion
+- Employee email, role, phone, and optional password updates
+- Searchable package tables, protected paid-cargo release, and per-staff commission filtering

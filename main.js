@@ -2,7 +2,11 @@ const { app, BrowserWindow, ipcMain, safeStorage, shell, dialog } = require('ele
 const fs = require('fs');
 const path = require('path');
 
+const HOSTED_APP_URL = 'https://swift-creation-app.lovable.app/dashboard';
+const HOSTED_ORIGIN = new URL(HOSTED_APP_URL).origin;
 let mainWindow;
+let showingOfflinePage = false;
+
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
 if (!hasSingleInstanceLock) {
   app.quit();
@@ -27,18 +31,71 @@ function writeSession(session) {
   fs.writeFileSync(tokenPath(), safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(value.toString()) : value);
 }
 function clearSession() { try { fs.unlinkSync(tokenPath()); } catch {} }
-function createWindow() {
-  mainWindow = new BrowserWindow({ width: 1440, height: 900, minWidth: 1100, minHeight: 700, backgroundColor: '#07131f', autoHideMenuBar: true, icon: path.join(__dirname, 'assets', 'dex-logo.ico'),
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false } });
-  mainWindow.loadFile('index.html');
+
+function isAllowedNavigation(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    return url.origin === HOSTED_ORIGIN || url.origin.endsWith('.supabase.co');
+  } catch { return false; }
 }
-app.whenReady().then(() => { createWindow(); app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow(); }); });
+
+function showOfflinePage() {
+  if (!mainWindow || mainWindow.isDestroyed() || showingOfflinePage) return;
+  showingOfflinePage = true;
+  mainWindow.loadFile(path.join(__dirname, 'offline.html'));
+}
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1440,
+    height: 900,
+    minWidth: 1100,
+    minHeight: 700,
+    backgroundColor: '#07131f',
+    autoHideMenuBar: true,
+    title: 'DEX Admin Console',
+    icon: path.join(__dirname, 'assets', 'dex-logo.ico'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+
+  mainWindow.webContents.on('page-title-updated', (event) => {
+    event.preventDefault();
+    mainWindow.setTitle('DEX Admin Console');
+  });
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!isAllowedNavigation(url)) {
+      event.preventDefault();
+      shell.openExternal(url).catch(() => {});
+    }
+  });
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (!isAllowedNavigation(url)) shell.openExternal(url).catch(() => {});
+    return { action: isAllowedNavigation(url) ? 'allow' : 'deny' };
+  });
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, _errorDescription, validatedURL) => {
+    if (errorCode !== -3 && validatedURL.startsWith(HOSTED_ORIGIN)) showOfflinePage();
+  });
+  mainWindow.webContents.on('did-finish-load', () => { showingOfflinePage = false; });
+  mainWindow.loadURL(HOSTED_APP_URL);
+}
+
+app.whenReady().then(() => {
+  createWindow();
+  app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow(); });
+});
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+
 ipcMain.handle('connection:get', () => readConfig());
 ipcMain.handle('connection:save', (_, config) => { writeConfig(config); return true; });
 ipcMain.handle('session:get', () => readSession());
 ipcMain.handle('session:save', (_, session) => { writeSession(session); return true; });
 ipcMain.handle('session:clear', () => { clearSession(); return true; });
+ipcMain.handle('app:reload-hosted', () => { showingOfflinePage = false; mainWindow?.loadURL(HOSTED_APP_URL); return true; });
 ipcMain.handle('external:open', async (_, rawUrl) => {
   try {
     const url = new URL(String(rawUrl));

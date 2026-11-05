@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DEX Admin Console</title>
+  <style>
+    :root { color-scheme: dark; font-family: Segoe UI, Arial, sans-serif; background: #07131f; color: #edf7ff; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: radial-gradient(circle at 50% 15%, #123653, #07131f 65%); }
+    main { width: min(520px, calc(100% - 48px)); padding: 42px; border: 1px solid #29465d; border-radius: 22px; background: rgba(13, 31, 47, .94); box-shadow: 0 24px 80px rgba(0,0,0,.35); text-align: center; }
+    img { width: 76px; height: 76px; margin-bottom: 18px; }
+    h1 { margin: 0 0 12px; font-size: 28px; }
+    p { color: #a9bfce; line-height: 1.6; }
+    button { margin-top: 18px; border: 0; border-radius: 12px; padding: 13px 22px; background: #8ce4d8; color: #06202a; font-weight: 800; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="assets/dex-logo.png" alt="DEX Logistics">
+    <h1>DEX Admin Console is offline</h1>
+    <p>The hosted workspace could not be reached. Check the internet connection, then try again.</p>
+    <button id="retry">Try again</button>
+  </main>
+  <script>document.querySelector('#retry').addEventListener('click', () => window.dexAdmin?.reloadHosted?.());</script>
+</body>
+</html>

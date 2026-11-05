@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('dexAdmin', {
   getSession: () => ipcRenderer.invoke('session:get'),
   saveSession: (value) => ipcRenderer.invoke('session:save', value),
   clearSession: () => ipcRenderer.invoke('session:clear'),
+  reloadHosted: () => ipcRenderer.invoke('app:reload-hosted'),
   openExternal: (url) => ipcRenderer.invoke('external:open', url),
   savePdf: (options) => ipcRenderer.invoke('pdf:save', options)
 });
