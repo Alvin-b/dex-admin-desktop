@@ -49,8 +49,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
-    minWidth: 1100,
-    minHeight: 700,
+    minWidth: 760,
+    minHeight: 560,
     backgroundColor: '#07131f',
     autoHideMenuBar: true,
     title: 'DEX Admin Console',
