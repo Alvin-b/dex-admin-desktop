@@ -11,6 +11,7 @@ win:
       arch:
         - x64
   signExecutable: false
+  signAndEditExecutable: false
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true

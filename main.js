@@ -6,6 +6,8 @@ const HOSTED_APP_URL = 'https://swift-creation-app.lovable.app/dashboard';
 const HOSTED_ORIGIN = new URL(HOSTED_APP_URL).origin;
 let mainWindow;
 let showingOfflinePage = false;
+let loadAttempt = 0;
+let blankScreenTimer;
 
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
 if (!hasSingleInstanceLock) {
@@ -42,15 +44,61 @@ function isAllowedNavigation(rawUrl) {
 function showOfflinePage() {
   if (!mainWindow || mainWindow.isDestroyed() || showingOfflinePage) return;
   showingOfflinePage = true;
+  if (blankScreenTimer) clearTimeout(blankScreenTimer);
   mainWindow.loadFile(path.join(__dirname, 'offline.html'));
+}
+
+function responsiveHostedLayer() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  mainWindow.webContents.insertCSS(`
+    html { min-width: 0 !important; width: 100% !important; overflow-x: hidden !important; }
+    body { min-width: 0 !important; max-width: 100vw !important; width: 100% !important; overflow-x: hidden !important; }
+    *, *::before, *::after { box-sizing: border-box; }
+    img, svg, video, canvas { max-width: 100%; }
+    input, select, textarea, button { max-width: 100%; }
+    #lovable-badge, [id*="lovable" i], [class*="lovable" i],
+    a[href*="lovable.dev"], a[href*="lovable.app"] { display: none !important; visibility: hidden !important; }
+    @media (max-width: 900px) {
+      main, [role="main"] { min-width: 0 !important; max-width: 100vw !important; }
+      header, nav, [role="banner"] { flex-wrap: wrap !important; }
+    }
+  `).catch(() => {});
+  mainWindow.webContents.executeJavaScript(`(() => {
+    const removeLovableBadge = () => document.querySelectorAll(
+      '#lovable-badge, [id*="lovable" i], [class*="lovable" i], a[href*="lovable.dev"], a[href*="lovable.app"]'
+    ).forEach(node => node.remove());
+    removeLovableBadge();
+    if (!window.__dexLovableBadgeObserver) {
+      window.__dexLovableBadgeObserver = new MutationObserver(removeLovableBadge);
+      window.__dexLovableBadgeObserver.observe(document.documentElement, { childList: true, subtree: true });
+    }
+  })()`).catch(() => {});
+}
+
+function loadHostedApp({ clearCache = false } = {}) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  showingOfflinePage = false;
+  loadAttempt += 1;
+  const attempt = loadAttempt;
+  const load = () => mainWindow.loadURL(HOSTED_APP_URL, { extraHeaders: 'Cache-Control: no-cache\\n' });
+  const proceed = clearCache
+    ? mainWindow.webContents.session.clearCache().catch(() => {}).then(load)
+    : Promise.resolve(load());
+  proceed.catch(() => {});
+  if (blankScreenTimer) clearTimeout(blankScreenTimer);
+  blankScreenTimer = setTimeout(() => {
+    if (attempt !== loadAttempt || !mainWindow || mainWindow.isDestroyed() || showingOfflinePage) return;
+    if (loadAttempt < 3) loadHostedApp({ clearCache: true });
+    else showOfflinePage();
+  }, 15000);
 }
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
-    minWidth: 760,
-    minHeight: 560,
+    minWidth: 480,
+    minHeight: 520,
     backgroundColor: '#07131f',
     autoHideMenuBar: true,
     title: 'DEX Admin Console',
@@ -77,11 +125,32 @@ function createWindow() {
     if (!isAllowedNavigation(url)) shell.openExternal(url).catch(() => {});
     return { action: isAllowedNavigation(url) ? 'allow' : 'deny' };
   });
-  mainWindow.webContents.on('did-fail-load', (_event, errorCode, _errorDescription, validatedURL) => {
-    if (errorCode !== -3 && validatedURL.startsWith(HOSTED_ORIGIN)) showOfflinePage();
+  mainWindow.webContents.on('console-message', (_event, level, message) => {
+    if (level >= 2) console.warn(`[DEX hosted page] ${message}`);
   });
-  mainWindow.webContents.on('did-finish-load', () => { showingOfflinePage = false; });
-  mainWindow.loadURL(HOSTED_APP_URL);
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, _errorDescription, validatedURL) => {
+    if (errorCode === -3) return;
+    if (validatedURL.startsWith(HOSTED_ORIGIN)) {
+      if (loadAttempt < 3) loadHostedApp({ clearCache: true });
+      else showOfflinePage();
+    }
+  });
+  mainWindow.webContents.on('did-finish-load', () => {
+    showingOfflinePage = false;
+    if (blankScreenTimer) clearTimeout(blankScreenTimer);
+    loadAttempt = 0;
+    responsiveHostedLayer();
+    setTimeout(() => {
+      if (!mainWindow || mainWindow.isDestroyed() || showingOfflinePage) return;
+      mainWindow.webContents.executeJavaScript('Boolean(document.body && document.body.innerText.trim())').then(hasContent => {
+        if (!hasContent) showOfflinePage();
+      }).catch(() => {});
+    }, 2500);
+  });
+  mainWindow.webContents.on('render-process-gone', () => {
+    if (!showingOfflinePage) loadHostedApp({ clearCache: true });
+  });
+  loadHostedApp();
 }
 
 app.whenReady().then(() => {
@@ -95,7 +164,7 @@ ipcMain.handle('connection:save', (_, config) => { writeConfig(config); return t
 ipcMain.handle('session:get', () => readSession());
 ipcMain.handle('session:save', (_, session) => { writeSession(session); return true; });
 ipcMain.handle('session:clear', () => { clearSession(); return true; });
-ipcMain.handle('app:reload-hosted', () => { showingOfflinePage = false; mainWindow?.loadURL(HOSTED_APP_URL); return true; });
+ipcMain.handle('app:reload-hosted', () => { loadHostedApp({ clearCache: true }); return true; });
 ipcMain.handle('external:open', async (_, rawUrl) => {
   try {
     const url = new URL(String(rawUrl));

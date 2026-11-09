@@ -117,3 +117,68 @@
 .payment-amount-hint{display:block;margin-top:6px;color:#8ff0c9;font-size:11px}
 
 .payment-package-unavailable{opacity:.55;cursor:not-allowed}.payment-package-unavailable:hover{background:transparent}.payment-link-amount{display:flex;flex-direction:column;gap:4px;margin:14px 0;padding:11px 13px;border:1px solid #5b4e2c;border-radius:10px;background:#211d13;color:#f4d58a}.payment-link-amount span{color:#bda96f;font-size:12px}
+
+/* Responsive rebuild: keep the workspace readable instead of compressing it. */
+html, body, #app { min-width: 0; width: 100%; max-width: 100%; overflow-x: hidden; }
+.shell, .app-shell { min-width: 0; width: 100%; }
+main, .app-shell > main, .content { min-width: 0; max-width: 100%; }
+header, .topbar { min-width: 0; flex-wrap: wrap; gap: 14px; }
+header > div:first-child, .topbar > div:first-child { min-width: 0; flex: 1 1 240px; }
+header h1, .topbar h1, header .eyebrow { overflow-wrap: anywhere; }
+.top-actions, .topbar .top-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.live { white-space: nowrap; }
+.grid.two, .broadcast-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.metrics { grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); }
+.toolbar { min-width: 0; flex-wrap: wrap; gap: 12px; }
+.toolbar .search, .package-toolbar .search { min-width: min(100%, 360px); flex: 1 1 260px; }
+.toolbar > * { max-width: 100%; }
+.panel, .role-banner, .package-dialog { min-width: 0; }
+.panel-head { min-width: 0; flex-wrap: wrap; gap: 10px; }
+.panel-head > div { min-width: 0; }
+.panel-head h2, .panel-head p { overflow-wrap: anywhere; }
+.table-wrap { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-wrap table { min-width: max-content; }
+.package-table-wrap { max-width: 100%; }
+.package-table-wrap table { min-width: 980px; }
+.package-dialog-backdrop { padding: clamp(10px, 3vw, 24px); }
+.package-dialog { max-height: calc(100vh - 20px); overflow-y: auto; }
+.dialog-actions { flex-wrap: wrap; }
+.dialog-actions button { flex: 1 1 160px; }
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 76px minmax(0, 1fr); }
+  .shell aside { padding: 20px 10px; }
+  .shell aside .brand > div:not(.mark), .shell aside .workspace, .shell aside .nav:not(.active) { font-size: 0; }
+  .shell aside .nav { justify-content: center; gap: 0; }
+  .shell aside .nav span { font-size: 18px; }
+  .shell aside .side-bottom > div:not(.admin-dot), .shell aside .side-bottom button { display: none; }
+  .shell main { padding: 24px 18px; }
+  .app-shell main { padding: 22px 18px; }
+  .app-shell .sidebar { width: 76px; }
+}
+@media (max-width: 640px) {
+  .shell { display: block; }
+  .shell aside { display: flex; flex-direction: row; align-items: center; gap: 8px; padding: 10px 12px; border-right: 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .shell aside .brand { padding: 0 8px 0 0; margin-right: 4px; border-right: 1px solid var(--line); flex: 0 0 auto; }
+  .shell aside .workspace, .shell aside .side-bottom { display: none; }
+  .shell aside .nav { flex: 0 0 auto; margin: 0; padding: 9px 11px; font-size: 0; }
+  .shell aside .nav span { font-size: 17px; }
+  .shell main, .app-shell main, .app-shell.page-shipments > main { padding: 16px 12px; }
+  header, .topbar { align-items: flex-start; margin-bottom: 18px; }
+  header h1, .topbar h1 { font-size: 21px; line-height: 1.15; }
+  .top-actions, .topbar .top-actions { width: 100%; justify-content: space-between; }
+  .toolbar { padding: 10px 0; margin-bottom: 12px; }
+  .toolbar .search, .package-toolbar .search { min-width: 100%; width: 100%; }
+  .category-tabs { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+  .category-tabs button { flex: 0 0 auto; }
+  .role-banner { padding: 16px; }
+  .panel { padding: 14px; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .payment-control-details { display: grid; grid-template-columns: 1fr 1fr; }
+  .commission-export { align-items: stretch; flex-direction: column; padding: 12px 0; }
+  .commission-export input { min-width: 0; width: 100%; }
+}
+@media (max-width: 420px) {
+  .metrics { grid-template-columns: 1fr; }
+  .payment-control-details { grid-template-columns: 1fr; }
+  .dialog-actions button { flex-basis: 100%; }
+}

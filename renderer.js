@@ -758,3 +758,26 @@ paymentLinkDialog=function(id){
   modal.querySelector('[data-payment-search]').oninput=event=>{const query=String(event.target.value||'').toLocaleLowerCase().trim();let shown=0;modal.querySelectorAll('[data-payment-search-row]').forEach(row=>{const match=!query||String(row.textContent||'').toLocaleLowerCase().includes(query);row.style.display=match?'grid':'none';if(match&&!row.querySelector('[data-payment-package]')?.disabled)shown++});modal.querySelector('[data-visible-count]').textContent=shown};
   modal.querySelector('[data-confirm-payment-link]').onclick=async event=>{const button=event.currentTarget,chosen=[...modal.querySelectorAll('[data-payment-package]:checked')].map(input=>input.value),total=chosen.reduce((sum,packageId)=>sum+Number(rowData.find(x=>String(x.package.id)===String(packageId))?.value||0),0);if(!chosen.length)return toast('Select at least one eligible package.','error');if(evidenceTotal&&total>evidenceTotal+0.01)return toast(`Selected packages total ${money(total)}, but this evidence is only ${money(evidenceTotal)}. Link fewer packages or upload the complete payment evidence.`,'error');button.disabled=true;button.textContent='Linking packages…';try{await adminRequest('/api/public/link-payment',{method:'POST',body:JSON.stringify({payment_notification_id:id,allocations:chosen.map(package_id=>({package_id}))})});modal.remove();state.paymentEvidenceView='linked';toast(`${chosen.length} package${chosen.length===1?'':'s'} marked Paid; evidence moved to Linked evidence.`);await refreshData()}catch(error){button.disabled=false;button.textContent='Link selected packages';toast(`Payment link failed: ${error.message}`,'error')}};
 };
+
+// Final reliability override: never replace good records with empty arrays when
+// one backend source is unavailable during refresh.
+const dexRefreshWithPartialFailures = refreshData;
+refreshData = async function resilientRefreshData(){
+  state.busy=true; render();
+  const previous=state.data||{}, failed=[];
+  const load=async(key, fn, fallback=[])=>{try{return [key, await fn()]}catch(error){console.warn(`Refresh source failed: ${key}`,error);failed.push(key);return [key, previous[key] ?? fallback]}};
+  const entries=await Promise.all([
+    load('packages',()=>request('rest/v1/cargo_packages?select=*&order=registered_at.desc&limit=500')),
+    load('notifications',()=>request('rest/v1/payment_notifications?select=*&order=uploaded_at.desc&limit=200')),
+    load('commissions',()=>request('rest/v1/commissions?select=*&order=created_at.desc&limit=300')),
+    load('audits',()=>request('rest/v1/audit_logs?select=*&order=timestamp.desc&limit=150')),
+    load('broadcasts',()=>request('rest/v1/broadcast_messages?select=*&order=timestamp.desc&limit=50')),
+    load('employees',()=>adminRequest('/api/public/admin/employees').then(x=>x.employees||[])),
+    load('revenue',()=>adminRequest('/api/public/revenue-summary'),null),
+    (state.role==='finance_manager'||state.role==='admin')?load('finance',()=>financeRequest('workspace'),null):Promise.resolve(['finance',previous.finance??null])
+  ]);
+  state.data={...previous,...Object.fromEntries(entries)};
+  try{state.data.allocations=await request('rest/v1/payment_allocations?select=*&order=linked_at.desc&limit=1000')}catch(error){if(previous.allocations)state.data.allocations=previous.allocations;else state.data.allocations=[];failed.push('allocations')}
+  state.refresh={failed,at:new Date().toISOString()}; state.busy=false; render();
+  if(failed.length)toast(`Some live data could not be refreshed. Previous records were kept (${failed.join(', ')}).`,'error');
+};
